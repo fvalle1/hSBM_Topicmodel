@@ -119,11 +119,11 @@ class sbmtm():
         self.documents = [ self.g.vp['name'][v] for v in  self.g.vertices() if self.g.vp['kind'][v]==0   ]
 
 
-    def fit(self,overlap = False, hierarchical = True, B_min = None, n_init = 1,verbose=False):
+    def fit(self, overlap = False, hierarchical = True, B_min = None, B_max = None, n_init = 1, verbose = False):
         '''
         Fit the sbm to the word-document network.
         - overlap, bool (default: False). Overlapping or Non-overlapping groups.
-            Overlapping not implemented yet
+            Overlapping implemented in fit_overlap
         - hierarchical, bool (default: True). Hierarchical SBM or Flat SBM.
             Flat SBM not implemented yet.
         - Bmin, int (default:None): pass an option to the graph-tool inference specifying the minimum number of blocks.
@@ -148,7 +148,9 @@ class sbmtm():
                                                      overlap=overlap,
                                                      state_args=state_args,
                                                      B_min = B_min,
-                                                     verbose=verbose)
+                                                     B_max = B_max,
+                                                     verbose=verbose
+                                                            )
                 mdl_tmp = state_tmp.entropy()
                 if mdl_tmp < mdl:
                     mdl = 1.0*mdl_tmp
@@ -182,6 +184,38 @@ class sbmtm():
             #         dict_groups_l = self.get_groups(l=l)
             #         dict_groups_L[l] = dict_groups_l
             # self.groups = dict_groups_L
+
+	def fit_overlap(self, n_init=1, overlap = True, hierarchical = True, B_min = 20, B_max = 160, verbose = True):
+		'''
+		Fit the sbm to the word-document network.
+		- overlap, bool (default: True). Overlapping groups.
+		- hierarchical, bool (default: True). Hierarchical SBM or Flat SBM.
+		    Flat SBM not implemented yet.
+		- Bmin, int (default:20): pass an option to the graph-tool inference specifying the minimum number of blocks.
+		'''
+
+		g=self.g
+		clabel = g.vp['kind']
+		state_args = {'clabel': clabel, 'pclabel': clabel}
+		if "count" in g.ep:
+		    state_args["eweight"] = g.ep.count
+
+		self.state = gt.minimize_nested_blockmodel_dl(g,B_min=B_min, B_max=B_max, overlap=True, verbose=verbose, nonoverlap_init=False,deg_corr=True)
+		self.mdl=self.state.entropy()
+		L = len(self.state.levels)
+		dict_groups_L = {}
+		if L == 2:
+		    self.L = 1
+		    for l in range(L-1):
+		        dict_groups_l = self.get_groups(l=l)
+		        dict_groups_L[l] = dict_groups_l
+		        ## omit trivial levels: l=L-1 (single group), l=L-2 (bipartite)
+		else:
+		    self.L = L-2
+		    for l in range(L-2):
+		        dict_groups_l = self.get_groups(l=l)
+		        dict_groups_L[l] = dict_groups_l
+		self.groups = dict_groups_L
 
     def plot(self, filename = None,nedges = 1000):
         '''
