@@ -156,9 +156,10 @@ class sbmtm():
                     mdl = 1.0*mdl_tmp
                     state = state_tmp.copy()
 
+            self.mdl=mdl
             self.state = state
             ## minimum description length
-            self.mdl = state.entropy()
+            self.mdl = self.state.entropy()
             L = len(state.levels)
             if L == 2:
                 self.L = 1
