@@ -415,6 +415,9 @@ class sbmtm():
     ###########
     ########### HELPER FUNCTIONS
     ###########
+    def get_mdl(self):
+        return self.mdl
+
     ## get group-topic statistics
     def get_groups(self,l=0):
         '''
