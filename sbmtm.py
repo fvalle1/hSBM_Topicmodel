@@ -211,7 +211,7 @@ class sbmtm():
         self.documents = [ self.g.vp['name'][v] for v in  self.g.vertices() if self.g.vp['kind'][v]==0   ]
 
 
-    def fit(self, overlap = False, hierarchical = True, B_min = None, B_max = None, n_init = 1, parallel=False, verbose = False):
+    def fit(self, overlap = False, hierarchical = True, B_min = None, B_max = None, n_init = 1, sequential=True, verbose = False):
         '''
         Fit the sbm to the word-document network.
         - overlap, bool (default: False). Overlapping or Non-overlapping groups.
@@ -240,9 +240,9 @@ class sbmtm():
                                                      overlap=overlap,
                                                      state_args=state_args,
                                                      mcmc_args={'parallel':parallel},
-                                                     mcmc_equilibrate_args={'mcmc_args':{'parallel':parallel}},
+                                                     mcmc_equilibrate_args={'mcmc_args':{'sequential':sequential}},
                                                      mcmc_multilevel_args={
-                                                                  'mcmc_equilibrate_args': {'mcmc_args':{'parallel':parallel}}},
+                                                                  'mcmc_equilibrate_args': {'mcmc_args':{'sequential':sequential}}},
                                                      B_min = B_min,
                                                      B_max = B_max,
                                                      verbose=verbose
