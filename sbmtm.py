@@ -7,7 +7,7 @@ import pickle
 import graph_tool.all as gt
 import sys
 from matplotlib import pyplot as plt
-Import scipy
+import scipy
 
 
 class sbmtm():
@@ -240,7 +240,7 @@ class sbmtm():
                 state_tmp = gt.minimize_nested_blockmodel_dl(g, deg_corr=True,
                                                      overlap=overlap,
                                                      state_args=state_args,
-                                                     mcmc_args={'parallel':parallel},
+                                                     mcmc_args={'sequential': sequential},
                                                      mcmc_equilibrate_args={'mcmc_args':{'sequential':sequential}},
                                                      mcmc_multilevel_args={
                                                                   'mcmc_equilibrate_args': {'mcmc_args':{'sequential':sequential}}},
