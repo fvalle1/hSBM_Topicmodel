@@ -7,6 +7,7 @@ import pickle
 import graph_tool.all as gt
 import sys
 from matplotlib import pyplot as plt
+Import scipy
 
 
 class sbmtm():
