@@ -340,10 +340,9 @@ class sbmtm():
             if "count" in g.ep:
                 state_args["eweight"] = g.ep.count
 
+        state = self.state
         if state is not None:
-            state = self.state
-            state = state.copy(bs=state.get_bs() + [np.zeros(1)] * 4,
-                               sampling = True
+            state = state.copy(bs=state.get_bs() + [np.zeros(1)] * 4,sampling = True)
         else:
             state = gt.NestedBlockState(g)
 
