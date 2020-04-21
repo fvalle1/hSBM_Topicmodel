@@ -329,7 +329,7 @@ class sbmtm():
                                sampling = True
         else:
             state = gt.NestedBlockState(g)
-            
+
         for i in range(n_steps): # this should be sufficiently large
           state.multiflip_mcmc_sweep(beta=beta, niter=niter)
 
@@ -751,6 +751,23 @@ class sbmtm():
         plt.ylabel('Topic, tw')
         plt.colorbar()
         fig.savefig("p_tw_d_%d.png"%l)
+
+    def dump_model(self, filename="topsbm.pkl"):
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f)
+
+    def load_model(self, filename="topsbm.pkl"):
+        if self.g is not None:
+            del self.g
+        del self.words
+        del self.documents
+        if self.state is not None:
+            del self.state
+        del self.groups
+        del self.mdl
+        del self.L
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)
 
     def save_data(self):
         for i in range(len(self.state.get_levels())-2)[::-1]:
