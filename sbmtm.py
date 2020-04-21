@@ -325,7 +325,7 @@ class sbmtm():
         self.groups = dict_groups_L
 
 
-    def multiflip_mcmc_sweep(self, n_steps=1000, beta=np.inf, niter=10):
+    def multiflip_mcmc_sweep(self, n_steps=1000, beta=np.inf, niter=10, verbose=True):
         '''
         Fit the sbm to the word-document network. Use multtiplip_mcmc_sweep
         - n_steps, int (default:1): number of steps.
@@ -346,7 +346,9 @@ class sbmtm():
         else:
             state = gt.NestedBlockState(g)
 
-        for i in range(n_steps): # this should be sufficiently large
+        for step in range(n_steps): # this should be sufficiently large
+          if verbose:
+              print(f"step: {step}")
           state.multiflip_mcmc_sweep(beta=beta, niter=niter)
 
         self.state = state
