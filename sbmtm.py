@@ -628,9 +628,10 @@ class sbmtm():
             z1,z2 = state_l_edges[e]
             v1 = e.source()
             v2 = e.target()
-            n_db[int(v1),z1] += 1
-            n_dbw[int(v1),z2] += 1
-            n_wb[int(v2)-D,z2] += 1
+            weight = g.ep["count"][e]
+            n_db[int(v1), z1] += weight
+            n_dbw[int(v1), z2] += weight
+            n_wb[int(v2) - D, z2] += weight
 
         p_w = np.sum(n_wb,axis=1)/float(np.sum(n_wb))
 
