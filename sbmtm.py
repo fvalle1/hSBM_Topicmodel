@@ -333,9 +333,9 @@ class sbmtm():
             state = gt.NestedBlockState(g)
 
         for step in range(n_steps): # this should be sufficiently large
-          if verbose:
-              print(f"step: {step}")
-          state.multiflip_mcmc_sweep(beta=beta, niter=niter)
+            if verbose:
+                print(f"step: {step}")
+            state.multiflip_mcmc_sweep(beta=beta, niter=niter)
 
         self.state = state
         ## minimum description length
