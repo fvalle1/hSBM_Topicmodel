@@ -480,7 +480,7 @@ class sbmtm():
         get the n most common words for each word-group in level l.
         return tuples (word,P(w|tw))
         '''
-        dict_groups = self.groups[l]
+        dict_groups = self.get_groups(l)
         Bw = dict_groups['Bw']
         p_w_tw = dict_groups['p_w_tw']
 
@@ -501,7 +501,7 @@ class sbmtm():
         return dict_group_words
 
     def topicdist(self, doc_index, l=0):
-        dict_groups = self.groups[l]
+        dict_groups = self.get_groups(l)
         p_tw_d = dict_groups['p_tw_d']
         list_topics_tw = []
         for tw, p_tw in enumerate(p_tw_d[:, doc_index]):
@@ -515,7 +515,7 @@ class sbmtm():
         For the non-overlapping case, each document belongs to one and only one group with prob 1.
 
         '''
-        dict_groups = self.groups[l]
+        dict_groups = self.get_groups(l)
         Bd = dict_groups['Bd']
         p_td_d = dict_groups['p_td_d']
 
@@ -540,7 +540,7 @@ class sbmtm():
         Note: Works only for non-overlapping model.
         For overlapping case, we need something else.
         '''
-        dict_groups = self.groups[l]
+        dict_groups = self.get_groups(l)
         Bd = dict_groups['Bd']
         p_td_d = dict_groups['p_td_d']
 
@@ -566,7 +566,7 @@ class sbmtm():
             - word-nodes, p_tw_w, array with shape Bw x V
         It gives the probability of a nodes belonging to one of the groups.
         '''
-        dict_groups = self.groups[l]
+        dict_groups = self.get_groups(l)
         p_tw_w = dict_groups['p_tw_w']
         p_td_d = dict_groups['p_td_d']
         return p_td_d, p_tw_w
@@ -655,10 +655,10 @@ class sbmtm():
             pass
 
         ## word-distr
-        list_topics = np.arange(len(self.groups[l]['p_w_tw'].T))
+        list_topics = np.arange(len(self.get_groups(l)['p_w_tw'].T))
         list_columns = ["Topic %d" % (t + 1) for t in list_topics]
 
-        pwtw_df = pd.DataFrame(data=self.groups[l]['p_w_tw'], index=self.words, columns=list_columns)
+        pwtw_df = pd.DataFrame(data=self.get_groups(l)['p_w_tw'], index=self.words, columns=list_columns)
         pwtw_df.replace(0, np.nan)
         pwtw_df = pwtw_df.dropna(how='all', axis=0)
         pwtw_df.replace(np.nan, 0)
@@ -680,10 +680,6 @@ class sbmtm():
         return self.mdl
 
     ## get group-topic statistics
-
-    def get_mdl(self):
-        return self.mdl
-
     def get_groups(self,l=0):
         '''
         extract statistics on group membership of nodes form the inferred state.
@@ -702,6 +698,9 @@ class sbmtm():
         V = self.get_V()
         D = self.get_D()
         N = self.get_N()
+
+        if l in self.groups.keys():
+            return self.groups[l]
 
         g = self.g
         state = self.state
@@ -761,6 +760,8 @@ class sbmtm():
         result['p_td_d'] = p_td_d
         result['p_w_tw'] = p_w_tw
         result['p_tw_d'] = p_tw_d
+
+        self.groups[l]=result
 
         return result
 
