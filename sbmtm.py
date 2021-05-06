@@ -170,11 +170,11 @@ class sbmtm():
                 if count < 1:
                     continue
                 if counts:
-                    e = g.add_edge(i_d, D + i_w)
+                    e = g.add_edge(i_d, D + i_w, add_missing = False)
                     ecount[e] = count
                 else:
                     for n in range(count):
-                        g.add_edge(i_d, D + i_w)
+                        g.add_edge(i_d, D + i_w, add_missing = False)
 
         ## filter word-types with less than n_min counts
         if n_min is not None:
