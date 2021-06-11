@@ -237,6 +237,8 @@ class sbmtm():
             Flat SBM not implemented yet.
         - Bmin, int (default:None): pass an option to the graph-tool inference specifying the minimum number of blocks.
         - n_init, int (default:1): number of different initial conditions to run in order to avoid local minimum of MDL.
+        - parallel: passed to mcmc_sweep 
+        If parallel == False each vertex move attempt is made sequentially, where vertices are visited in random order. Otherwise the moves are attempted by sampling vertices randomly, so that the same vertex can be moved more than once, before other vertices had the chance to move.
         '''
 
         sequential = not parallel
