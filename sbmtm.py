@@ -259,7 +259,8 @@ class sbmtm():
             mdl = np.inf  ##
             for i_n_init in range(n_init):
                 state_tmp = gt.minimize_nested_blockmodel_dl(g,
-                                                             deg_corr=True,
+                                                             state_args=dict(
+                                                                 deg_corr=True),
                                                              overlap=overlap,
                                                              state_args=state_args,
                                                              mcmc_args={'sequential': sequential},
