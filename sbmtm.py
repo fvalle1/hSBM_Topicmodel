@@ -230,7 +230,7 @@ class sbmtm():
         with open(filename, 'rb') as f:
             self = pickle.load(f)
 
-    def fit(self, overlap=False, hierarchical=True, B_min=None, B_max=None, n_init=1, parallel=False, verbose=False):
+    def fit(self, overlap=False, hierarchical=True, B_min=2, B_max=None, n_init=1, parallel=False, verbose=False):
         '''
         Fit the sbm to the word-document network.
         - overlap, bool (default: False). Overlapping or Non-overlapping groups.
@@ -252,6 +252,7 @@ class sbmtm():
             clabel = g.vp['kind']
 
             state_args = {'clabel': clabel, 'pclabel': clabel}
+
             if "count" in g.ep:
                 state_args["eweight"] = g.ep.count
 
