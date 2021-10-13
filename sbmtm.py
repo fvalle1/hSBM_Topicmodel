@@ -242,9 +242,6 @@ class sbmtm():
         - parallel: passed to mcmc_sweep 
         If parallel == False each vertex move attempt is made sequentially, where vertices are visited in random order. Otherwise the moves are attempted by sampling vertices randomly, so that the same vertex can be moved more than once, before other vertices had the chance to move.
         '''
-
-        sequential = not parallel
-
         g = self.g
         if g is None:
             print('No data to fit the SBM. Load some data first (make_graph)')
@@ -265,8 +262,9 @@ class sbmtm():
                 B_max = self.g.num_vertices()
 
             ## the inference
-            mdl = np.inf  ##
+            mdl = np.inf ##
             for i_n_init in range(n_init):
+                base_type = gt.BlockState if not overlap else gt.OverlapBlockState
                 state_tmp = gt.minimize_nested_blockmodel_dl(g,
                                                              state_args=state_args,
                                                              multilevel_mcmc_args={
@@ -278,10 +276,9 @@ class sbmtm():
 
                 mdl_tmp = state_tmp.entropy()
                 if mdl_tmp < mdl:
-                    mdl = 1.0 * mdl_tmp
+                    mdl = 1.0*mdl_tmp
                     state = state_tmp.copy()
 
-            self.mdl = mdl
             self.state = state
             ## minimum description length
             self.mdl = self.state.entropy()
@@ -691,6 +688,7 @@ class sbmtm():
              prob of word w given topic tw P(w | tw)
         - p_tw_d, array B_w x d; doc-topic mixtures:
              prob of word-group tw in doc d P(tw | d)
+        - label_map, array of size N; map from group labels to indexes in the above arrays
         '''
         V = self.get_V()
         D = self.get_D()
@@ -757,6 +755,7 @@ class sbmtm():
         result['p_td_d'] = p_td_d
         result['p_w_tw'] = p_w_tw
         result['p_tw_d'] = p_tw_d
+        result['label_map'] = label_map
 
         self.groups[l]=result
 
@@ -818,7 +817,7 @@ class sbmtm():
             return n_td_tw
 
     def plot_topic_dist(self, l):
-        groups = self.get_groups(l)
+        groups = self.groups[l]
         p_w_tw = groups['p_w_tw']
         fig = plt.figure(figsize=(12, 10))
         plt.imshow(p_w_tw, origin='lower', aspect='auto', interpolation='none')
