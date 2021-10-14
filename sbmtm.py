@@ -707,9 +707,9 @@ class sbmtm():
 
         ## count labeled half-edges, group-memberships
         B = state_l.get_B()
-        n_wb = np.zeros((V, B))  ## number of half-edges incident on word-node w and labeled as word-group tw
-        n_db = np.zeros((D, B))  ## number of half-edges incident on document-node d and labeled as document-group td
-        n_dbw = np.zeros((D, B))  ## number of half-edges incident on document-node d and labeled as word-group td
+        n_wb = np.zeros((V,B)) ## number of half-edges incident on word-node w and labeled as word-group tw
+        n_db = np.zeros((D,B)) ## number of half-edges incident on document-node d and labeled as document-group td
+        n_dbw = np.zeros((D,B)) ## number of half-edges incident on document-node d and labeled as word-group td
 
         for e in g.edges():
             z1, z2 = state_l_edges[e]
