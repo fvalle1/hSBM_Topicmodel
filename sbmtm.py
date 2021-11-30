@@ -520,6 +520,7 @@ class sbmtm():
         dict_group_docs = {}
         for td in range(Bd):
             p_d_ = p_td_d[td, :]
+            np.nan_to_num(p_d_, copy=False)
             ind_d_ = np.argsort(p_d_)[::-1]
             list_docs_td = []
             for i in ind_d_[:n]:
