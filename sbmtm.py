@@ -7,6 +7,7 @@ from collections import Counter,defaultdict
 import pickle
 import graph_tool.all as gt
 from contextlib import redirect_stdout
+import scipy
 
 class sbmtm():
     '''
