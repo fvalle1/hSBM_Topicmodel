@@ -117,6 +117,10 @@ class sbmtm():
 
         :type df: DataFrame
         """
+        
+        if df.min(axis=0).min()+df.min(axis=1).min() > 0:
+            raise ValueError('Your dataframe has empty rows or columns. Please remove them before proceeding.')
+        
         # make a graph
         g = gt.Graph(directed=False)
         ## define node properties
@@ -210,7 +214,20 @@ class sbmtm():
         self.documents = [ self.g.vp['name'][v] for v in  self.g.vertices() if self.g.vp['kind'][v]==0   ]
 
 
-    def fit(self,overlap = False, n_init = 1, verbose=False, epsilon=1e-3):
+    def load_model(self, filename="topsbm.pkl"):
+        if self.g is not None:
+            del self.g
+        del self.words
+        del self.documents
+        if self.state is not None:
+            del self.state
+        del self.groups
+        del self.mdl
+        del self.L
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)
+
+    def fit(self, overlap=False, hierarchical=True, B_min=2, B_max=None, n_init=1, parallel=False, verbose=False):
         '''
         Fit the sbm to the word-document network.
         - overlap, bool (default: False). Overlapping or Non-overlapping groups.
@@ -226,6 +243,7 @@ class sbmtm():
             clabel = g.vp['kind']
 
             state_args = {'clabel': clabel, 'pclabel': clabel}
+
             if "count" in g.ep:
                 state_args["eweight"] = g.ep.count
 
@@ -331,7 +349,8 @@ class sbmtm():
         ## loop over all word-groups
         dict_group_docs = {}
         for td in range(Bd):
-            p_d_ = p_td_d[td,:]
+            p_d_ = p_td_d[td, :]
+            np.nan_to_num(p_d_, copy=False)
             ind_d_ = np.argsort(p_d_)[::-1]
             list_docs_td = []
             for i in ind_d_[:n]:
@@ -507,7 +526,7 @@ class sbmtm():
         counts = 'count' in self.g.ep.keys()
 
         ## count labeled half-edges, group-memberships
-        B = state_l.get_nonempty_B()
+        B = state_l.get_B()
 
         n_wb = np.zeros((V,B))  ## number of half-edges incident on word-node w and labeled as word-group tw
         n_db = np.zeros((D,B))  ## number of half-edges incident on document-node d and labeled as document-group td
@@ -561,6 +580,27 @@ class sbmtm():
         result['label_map'] = label_map
 
         return result
+
+    def search_consensus(self, force_niter=100000, niter=100):
+         # collect nested partitions
+         bs = []
+
+         def collect_partitions(s):
+             bs.append(s.get_bs())
+
+         # Now we collect the marginals for exactly niter sweeps
+         gt.mcmc_equilibrate(self.state, force_niter=force_niter, mcmc_args=dict(niter=niter),
+                             callback=collect_partitions)
+
+         # Disambiguate partitions and obtain marginals
+         pmode = gt.PartitionModeState(bs, nested=True, converge=True)
+         pv = pmode.get_marginal(self.g)
+
+         # Get consensus estimate
+         bs = pmode.get_max_nested()
+         self.state = self.state.copy(bs=bs)
+
+         return pv
 
     ### helper functions
 
