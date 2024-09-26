@@ -402,23 +402,25 @@ class sbmtm():
         return p_td_d,p_tw_w
 
 
-    def print_topics(self,l=0,format='csv',path_save = ''):
+    def print_topics(self, l=0, format='csv', path_save=''):
         '''
         Print topics, topic-distributions, and document clusters for a given level in the hierarchy.
-        format: csv (default) or html
+
+        :param format: csv (default) or html
         '''
         V=self.get_V()
         D=self.get_D()
 
-        ## topics
-        dict_topics = self.topics(l=l,n=-1)
+        # topics
+        dict_topics = self.topics(l=l, n=-1)
 
         list_topics = sorted(list(dict_topics.keys()))
         list_columns = ['Topic %s'%(t+1) for t in list_topics]
 
         T = len(list_topics)
-        df = pd.DataFrame(columns = list_columns,index=range(V))
-
+        df = pd.DataFrame(columns=list_columns, index=range(V))
+        if format == 'pandas':
+            to_return = {}
 
         for t in list_topics:
             list_w = [h[0] for h in dict_topics[t]]
@@ -430,19 +432,23 @@ class sbmtm():
             filename = os.path.join(path_save,fname_save)
             df.to_csv(filename,index=False,na_rep='')
         elif format == 'html':
-            fname_save = 'topsbm_level_%s_topics.html'%(l)
-            filename = os.path.join(path_save,fname_save)
-            df.to_html(filename,index=False,na_rep='')
-        elif format=='tsv':
-            fname_save = 'topsbm_level_%s_topics.tsv'%(l)
-            filename = os.path.join(path_save,fname_save)
-            df.to_csv(filename,index=False,na_rep='',sep='\t')
+            fname_save = 'topsbm_level_%s_topics.html' % (l)
+            filename = os.path.join(path_save, fname_save)
+            df.to_html(filename, index=False, na_rep='')
+        elif format == 'tsv':
+            fname_save = 'topsbm_level_%s_topics.tsv' % (l)
+            filename = os.path.join(path_save, fname_save)
+            df.to_csv(filename, index=False, na_rep='', sep='\t')
+        elif format == 'pandas':
+            to_return.update({'topsbm_level_%s_topics' % (l): df.copy()})
         else:
             pass
+        
 
-        ## topic distributions
-        list_columns = ['i_doc','doc']+['Topic %s'%(t+1) for t in list_topics]
-        df = pd.DataFrame(columns=list_columns,index=range(D))
+        # topic distributions
+        list_columns = ['i_doc', 'doc'] + \
+            ['Topic %s' % (t + 1) for t in list_topics]
+        df = pd.DataFrame(columns=list_columns, index=range(D))
         for i_doc in range(D):
             list_topicdist = self.topicdist(i_doc,l=l)
             df.iloc[i_doc,0] = i_doc
@@ -454,13 +460,15 @@ class sbmtm():
             filename = os.path.join(path_save,fname_save)
             df.to_csv(filename,index=False,na_rep='')
         elif format == 'html':
-            fname_save = 'topsbm_level_%s_topic-dist.html'%(l)
-            filename = os.path.join(path_save,fname_save)
-            df.to_html(filename,index=False,na_rep='')
+            fname_save = 'topsbm_level_%s_topic-dist.html' % (l)
+            filename = os.path.join(path_save, fname_save)
+            df.to_html(filename, index=False, na_rep='')
+        elif format == 'pandas':
+            to_return.update({'topsbm_level_%s_topic-dist' % (l): df.copy()})
         else:
             pass
 
-        ## doc-groups
+        # doc-groups
 
         dict_clusters = self.clusters(l=l,n=-1)
 
@@ -481,11 +489,38 @@ class sbmtm():
             filename = os.path.join(path_save,fname_save)
             df.to_csv(filename,index=False,na_rep='')
         elif format == 'html':
-            fname_save = 'topsbm_level_%s_clusters.html'%(l)
-            filename = os.path.join(path_save,fname_save)
-            df.to_html(filename,index=False,na_rep='')
+            fname_save = 'topsbm_level_%s_clusters.html' % (l)
+            filename = os.path.join(path_save, fname_save)
+            df.to_html(filename, index=False, na_rep='')
+        elif format == 'pandas':
+            to_return.update({'topsbm_level_%s_clusters' % (l): df.copy()})
         else:
             pass
+
+        # word-distr
+        list_topics = np.arange(len(self.get_groups(l)['p_w_tw'].T))
+        list_columns = ["Topic %d" % (t + 1) for t in list_topics]
+
+        pwtw_df = pd.DataFrame(data=self.get_groups(
+            l)['p_w_tw'], index=self.words, columns=list_columns)
+        pwtw_df.replace(0, np.nan)
+        pwtw_df = pwtw_df.dropna(how='all', axis=0)
+        pwtw_df.replace(np.nan, 0)
+        if format == 'csv':
+            fname_save = "topsbm_level_%d_word-dist.csv" % l
+            filename = os.path.join(path_save, fname_save)
+            pwtw_df.to_csv(filename, index=True, header=True, na_rep='')
+        elif format == 'html':
+            fname_save = "topsbm_level_%d_word-dist.html" % l
+            filename = os.path.join(path_save, fname_save)
+            pwtw_df.to_html(filename, index=True, na_rep='')
+        elif format == 'pandas':
+            to_return.update({'topsbm_level_%d_word-dist' % (l): pwtw_df.copy()})
+        else:
+            pass
+
+        if format == 'pandas':
+            return to_return
 
     ###########
     ########### HELPER FUNCTIONS
@@ -718,3 +753,73 @@ class sbmtm():
             plt.matshow(e.todense())
             plt.savefig("mat_%d.png"%i)
         self.print_summary()
+
+    def serialize_data(self, save = False):
+        data = {
+            "g": self.g,
+            "words": list(self.words),
+            "documents": list(self.documents),
+            "mdl": self.mdl,
+        }
+        data.update({
+            "levels":
+                [{"topics": self.print_topics(l=l, format='pandas'),
+                  "block_matrix": self.state.get_levels()[l].get_matrix().todense(),
+                  # "plot_topic_dist": self.plot_topic_dist(l)
+                  }
+                 for l in range(len(self.state.get_levels()) - 2)
+                 ],
+            "summary": self.print_summary(tofile=False)
+        })
+        
+        if save:
+            import pickle
+            with open("topsbm_data.pkl", "wb") as f:
+                pickle.dump(data, f)
+        
+        return data
+    
+    def save_rdata(self):
+        import rpy2.robjects as ro
+        import rpy2.robjects.packages as rpackages
+        from rpy2.robjects import r
+        from rpy2.robjects.conversion import localconverter
+        from rpy2.robjects import pandas2ri, numpy2ri
+
+        # Ensure the 'base' package is loaded
+        rpackages.importr('base')
+        pandas2ri.activate()
+        numpy2ri.activate()
+        
+        def process_topic_df(df):
+            for col in df.columns:
+                if df[col].dtype == 'object':
+                    try:
+                        df[col] = df[col].astype(float)
+                    except ValueError:
+                        df[col] = df[col].astype(str)
+            return ro.conversion.py2rpy(df)
+
+        def parse_summary(text):
+            summary = text.split("\n")[:-1]
+            summary = [{v.split(":")[0]:int(v.split(":")[1]) for v in s.split(",")} for s in summary]
+            return ro.ListVector(summary)
+
+        # Convert Python data to R objects
+        with localconverter(ro.default_converter + pandas2ri.converter + numpy2ri.converter):
+            r_data = ro.ListVector({
+                "words": ro.StrVector(self.words),
+                "documents": ro.StrVector(self.documents),
+                "minimum_description_length": ro.FloatVector([self.mdl]),  # Wrap the float in a list
+                "levels": ro.ListVector([
+                    (l, ro.ListVector({
+                        "topics": ro.ListVector({k:process_topic_df(v) for k,v in self.print_topics(l=l, format='pandas').items()}),
+                        "block_matrix": ro.conversion.py2rpy(self.state.get_levels()[l].get_matrix().toarray())
+                    })) for l in range(len(self.state.get_levels()) - 2)
+                ]),
+                "summary": parse_summary(self.print_summary(tofile=False))
+            })
+          
+        ro.r.assign("topsbm_results", r_data)
+        ro.r("save(topsbm_results, file='{}')".format("topsbm_data.RData"))
+
