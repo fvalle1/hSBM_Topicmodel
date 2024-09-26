@@ -937,9 +937,12 @@ class sbmtm():
             return ro.conversion.py2rpy(df)
 
         def parse_summary(text):
-            summary = text.split("\n")[:-1]
-            summary = [{v.split(":")[0]:int(v.split(":")[1]) for v in s.split(",")} for s in summary]
-            return ro.ListVector(summary)
+            summary = [{v.split(":")[0].replace(" ",""):int(v.split(":")[1]) for v in s.split(",")} for s in summary]
+            return ro.ListVector({
+                "l": ro.IntVector([s["l"] for s in summary]),
+                "B": ro.IntVector([s["B"] for s in summary]),
+                "N": ro.IntVector([s["N"] for s in summary]),
+            })
 
         # Convert Python data to R objects
         with localconverter(ro.default_converter + pandas2ri.converter + numpy2ri.converter):
