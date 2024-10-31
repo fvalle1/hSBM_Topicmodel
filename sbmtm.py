@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from collections import Counter,defaultdict
 import pickle
 import graph_tool.all as gt
+import scipy
 
 
 class sbmtm():
@@ -118,7 +119,7 @@ class sbmtm():
         :type df: DataFrame
         """
         
-        if df.min(axis=0).min()+df.min(axis=1).min() > 0:
+        if df.min(axis=0).min()+df.min(axis=1).min() < 2:
             raise ValueError('Your dataframe has empty rows or columns. Please remove them before proceeding.')
         
         # make a graph
