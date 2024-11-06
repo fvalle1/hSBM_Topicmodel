@@ -345,6 +345,8 @@ class sbmtm():
         dict_groups = self.get_groups(l=l)
         Bd = dict_groups['Bd']
         p_td_d = dict_groups['p_td_d']
+        if n< 0:
+            n = len(p_td_d[0])
 
         docs = self.documents
         ## loop over all word-groups
