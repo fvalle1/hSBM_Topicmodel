@@ -119,7 +119,7 @@ class sbmtm():
         :type df: DataFrame
         """
         
-        if df.min(axis=0).min()+df.min(axis=1).min() < 2:
+        if df.sum(axis=0).min()+df.sum(axis=1).min() < 2:
             raise ValueError('Your dataframe has empty rows or columns. Please remove them before proceeding.')
         
         # make a graph
